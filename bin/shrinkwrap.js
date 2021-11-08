@@ -1,12 +1,15 @@
 const Shrinkwrap = require('../lib/shrinkwrap.js')
 const options = require('./lib/options.js')
-require('./lib/logging.js')
+const log = require('./lib/logging.js')
 require('./lib/timers.js')
 
-const { quiet } = options
-Shrinkwrap.load(options)
-  .then(s => quiet || console.log(JSON.stringify(s.commit(), 0, 2)))
+module.exports = Shrinkwrap.load(options)
+  .then(s => {
+    const output = JSON.stringify(s.commit(), 0, 2)
+    log.info(output)
+    return output
+  })
   .catch(er => {
-    console.error('shrinkwrap load failure', er)
-    process.exit(1)
+    log.error('shrinkwrap load failure', er)
+    throw er
   })

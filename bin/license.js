@@ -1,12 +1,12 @@
 const Arborist = require('../')
 const options = require('./lib/options.js')
-require('./lib/logging.js')
+const log = require('./lib/logging.js')
 require('./lib/timers.js')
 
 const a = new Arborist(options)
 const query = options._.shift()
 
-a.loadVirtual().then(tree => {
+module.exports = a.loadVirtual().then(tree => {
   // only load the actual tree if the virtual one doesn't have modern metadata
   if (!tree.meta || !(tree.meta.originalLockfileVersion >= 2)) {
     throw 'load actual'
@@ -14,9 +14,10 @@ a.loadVirtual().then(tree => {
     return tree
   }
 }).catch((er) => {
-  console.error('loading actual tree', er)
+  log.error('loading actual tree', er)
   return a.loadActual()
 }).then(tree => {
+  let output = []
   if (!query) {
     const set = []
     for (const license of tree.inventory.query('license')) {
@@ -28,11 +29,20 @@ a.loadVirtual().then(tree => {
       : a[1] ? -1
       : b[1] ? 1
       : 0)) {
-      console.log(count, license)
+      output.push(`${count} ${license}`)
+      log.info(count, license)
     }
   } else {
     for (const node of tree.inventory.query('license', query === 'undefined' ? undefined : query)) {
-      console.log(`${node.name} ${node.location} ${node.package.description || ''}`)
+      const msg = `${node.name} ${node.location} ${node.package.description || ''}`
+      output.push(msg)
+      log.info(msg)
     }
   }
+
+  return output.join('\n')
+}).catch(er => {
+  log.error(er)
+  throw er
 })
+

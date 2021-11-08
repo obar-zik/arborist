@@ -2,7 +2,7 @@ const Arborist = require('../')
 
 const options = require('./lib/options.js')
 const print = require('./lib/print-tree.js')
-require('./lib/logging.js')
+const log = require('./lib/logging.js')
 require('./lib/timers.js')
 
 const printDiff = diff => {
@@ -15,13 +15,13 @@ const printDiff = diff => {
       }
       switch (d.action) {
         case 'REMOVE':
-          console.error('REMOVE', d.actual.location)
+          log.info('REMOVE', d.actual.location)
           break
         case 'ADD':
-          console.error('ADD', d.ideal.location, d.ideal.resolved)
+          log.info('ADD', d.ideal.location, d.ideal.resolved)
           break
         case 'CHANGE':
-          console.error('CHANGE', d.actual.location, {
+          log.info('CHANGE', d.actual.location, {
             from: d.actual.resolved,
             to: d.ideal.resolved,
           })
@@ -35,15 +35,20 @@ const printDiff = diff => {
 const start = process.hrtime()
 process.emit('time', 'install')
 const arb = new Arborist(options)
-arb.reify(options).then(tree => {
+module.exports = arb.reify(options).then(async tree => {
   process.emit('timeEnd', 'install')
   const end = process.hrtime(start)
   print(tree)
   if (options.dryRun) {
     printDiff(arb.diff)
   }
-  console.error(`resolved ${tree.inventory.size} deps in ${end[0] + end[1] / 1e9}s`)
+  const output = `resolved ${tree.inventory.size} deps in ${end[0] + end[1] / 1e9}s`
+  log.info(output)
   if (tree.meta && options.save) {
-    tree.meta.save()
+    await tree.meta.save()
   }
-}).catch(er => console.error(require('util').inspect(er, { depth: Infinity })))
+  return output
+}).catch(er => {
+  log.error(require('util').inspect(er, { depth: Infinity }))
+  throw er
+})

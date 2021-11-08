@@ -55,5 +55,3 @@ for (const arg of process.argv.slice(2)) {
 if (options.path === undefined) {
   options.path = '.'
 }
-
-console.error(options)

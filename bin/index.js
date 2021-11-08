@@ -39,43 +39,57 @@ Additionally:
 * 'npm audit fix' is 'arborist audit --fix'
 `
 
-const help = () => console.log(usage())
+const options = require('./lib/options')
+const log = require('./lib/logging')
+
+log.info(options)
+
+let p = null
 
 switch (cmd) {
   case 'actual':
-    require('./actual.js')
+    p = require('./actual.js')
     break
   case 'virtual':
-    require('./virtual.js')
+    p = require('./virtual.js')
     break
   case 'ideal':
-    require('./ideal.js')
+    p = require('./ideal.js')
     break
   case 'prune':
-    require('./prune.js')
+    p = require('./prune.js')
     break
   case 'reify':
-    require('./reify.js')
+    p = require('./reify.js')
     break
   case 'audit':
-    require('./audit.js')
+    p = require('./audit.js')
     break
   case 'funding':
-    require('./funding.js')
+    p = require('./funding.js')
     break
   case 'license':
-    require('./license.js')
+    p = require('./license.js')
     break
   case 'shrinkwrap':
-    require('./shrinkwrap.js')
+    p = require('./shrinkwrap.js')
     break
   case 'help':
   case '-h':
   case '--help':
-    help()
+    console.log(usage())
     break
   default:
     process.exitCode = 1
     console.error(usage())
     break
+}
+
+if (p) {
+  p
+    .then((...args) => console.log('Result:', ...args))
+    .catch((e) => {
+      process.exitCode = 1
+      console.error('Result:', e)
+    })
 }
