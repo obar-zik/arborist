@@ -17,7 +17,7 @@ jobs:
       - run: npm i --prefer-online -g npm@latest
       - run: npm ci
       - name: Benchmark
-        run: ./scripts/logfile.sh "react-scripts" 10
+        run: ./scripts/logfile.sh "react-scripts" 9
       - name: Result
         run: |
           wc -l ./scripts/benchmark/logfile/*.log

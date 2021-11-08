@@ -17,26 +17,24 @@ rm -rf ./scripts/benchmark/logfile/
 mkdir -p ./scripts/benchmark/logfile/
 cd ./scripts/benchmark/logfile/
 
-reset *.log *.txt
+# init cache
+reset *.log *.txt cache/
+reify --loglevel=silent
 
-for (( i="1"; i<=$COUNT; i++ )); do
-  # init cache
-  reset cache/
-  reify --loglevel=silent > "$i-00-baseline-result.txt"
-
+for (( i="0"; i<=$COUNT; i++ )); do
   # silly
   reset
-  reify --offline --loglevel=silly > "$i-01-silly-result.txt"
+  reify --offline --loglevel=silly > "01-$i-silly-result.txt"
 
   # silly + logfile
   reset
-  reify --offline --loglevel=silly --logfile="$i-silly-logfile.log" > "$i-02-silly-logfile-result.txt"
+  reify --offline --loglevel=silly --logfile="02-$i-silly-logfile.log" > "02-$i-silly-logfile-result.txt"
 
   # silent
   reset
-  reify --offline --loglevel=silent > "$i-03-silent-result.txt"
+  reify --offline --loglevel=silent > "03-$i-silent-result.txt"
 
   # silent + logfile
   reset
-  reify --offline --loglevel=silent --logfile="$i-silent-logfile.log" > "$i-04-silent-logfile-result.txt"
+  reify --offline --loglevel=silent --logfile="04-$i-silent-logfile.log" > "04-$1-silent-logfile-result.txt"
 done
