@@ -40,9 +40,3 @@ for (( i="1"; i<=$COUNT; i++ )); do
   reset
   reify --offline --loglevel=silent --logfile="$i-silent-logfile.log" > "$i-04-silent-logfile-result.txt"
 done
-
-# wc of each logfile
-wc -l *.log
-
-# Show outputs
-grep "" *.txt
