@@ -6,7 +6,7 @@ on:
       - lk/bin-logfile
 
 jobs:
-  react-scripts:
+  silly:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -17,8 +17,21 @@ jobs:
       - run: npm i --prefer-online -g npm@latest
       - run: npm ci
       - name: Benchmark
-        run: ./scripts/logfile.sh "react-scripts" 9
+        run: ./scripts/logfile.sh reify silly
       - name: Result
-        run: |
-          wc -l ./scripts/benchmark/logfile/*.log
-          grep "" ./scripts/benchmark/logfile/*.txt
+        run: ./scripts/logfile.sh result
+
+  silent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          cache: npm
+      - run: npm i --prefer-online -g npm@latest
+      - run: npm ci
+      - name: Benchmark
+        run: ./scripts/logfile.sh reify silent
+      - name: Result
+        run: ./scripts/logfile.sh result

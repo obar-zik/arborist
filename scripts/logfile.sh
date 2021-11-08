@@ -2,39 +2,66 @@
 
 set -xe
 
-ADD="$1"
-COUNT=$2
+ACTION=${1:-reify}
+LOGLEVEL="${2:-silent}"
+COUNT=${3:-20}
 
-reset () {
-  rm -rf node_modules/ "$@"
+PACKAGE=$(cat <<-END
+{
+  "name": "benchmark",
+  "version": "1.0.0",
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^12.0.0",
+    "@testing-library/user-event": "^13.2.1",
+    "@types/jest": "^27.0.1",
+    "@types/node": "^16.7.13",
+    "@types/react": "^17.0.20",
+    "@types/react-dom": "^17.0.9",
+    "typescript": "^4.4.2",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "4.0.3",
+    "web-vitals": "^2.1.0",
+    "ink": "^3.2.0",
+    "tap": "^15.0.10"
+  }
 }
+END
+)
 
-reify () {
-  ../../../bin/index.js reify --add="$ADD" --cache=./cache --save=false --audit=false "$@"
-}
+DIR="./scripts/benchmark/logfile"
 
-rm -rf ./scripts/benchmark/logfile/
-mkdir -p ./scripts/benchmark/logfile/
-cd ./scripts/benchmark/logfile/
+if [ $ACTION == "reify" ]; then
+  rm -rf $DIR
+  mkdir -p $DIR
+  cd $DIR
 
-# init cache
-reset *.log *.txt cache/
-reify --loglevel=silent
+  reset () {
+    rm -rf node_modules/ package.json "$@"
+    echo $PACKAGE > package.json
+  }
 
-for (( i="0"; i<=$COUNT; i++ )); do
-  # silly
-  reset
-  reify --offline --loglevel=silly > "01-$i-silly-result.txt"
+  reify () {
+    ../../../bin/index.js reify --cache=./cache --save=false --audit=false "$@"
+  }
 
-  # silly + logfile
-  reset
-  reify --offline --loglevel=silly --logfile="02-$i-silly-logfile.log" > "02-$i-silly-logfile-result.txt"
+  # warm cache
+  reset *.log *.txt cache/
+  reify --loglevel=silent
 
-  # silent
-  reset
-  reify --offline --loglevel=silent > "03-$i-silent-result.txt"
+  for (( i="0"; i<=$COUNT; i++ )); do
+    id=`printf %03d $i`
+    # no logfile
+    reset
+    reify --offline --loglevel="$LOGLEVEL" > "00-$id-$LOGLEVEL-noofile.txt"
 
-  # silent + logfile
-  reset
-  reify --offline --loglevel=silent --logfile="04-$i-silent-logfile.log" > "04-$1-silent-logfile-result.txt"
-done
+    # logfile
+    reset
+    reify --offline --loglevel="$LOGLEVEL" --logfile="01-$id-$LOGLEVEL.log" > "01-$id-$LOGLEVEL-logfile.txt"
+  done
+else
+  wc -l $DIR/*.log
+  grep "" $DIR/*.txt
+fi
+
