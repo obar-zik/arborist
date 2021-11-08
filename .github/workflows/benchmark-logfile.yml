@@ -16,4 +16,4 @@ jobs:
           cache: npm
       - run: npm i --prefer-online -g npm@latest
       - run: npm ci
-      - run: ./benchmark-logfile.sh "react-scripts" 10
+      - run: ./scripts/logfile.sh "react-scripts" 10
